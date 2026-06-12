@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>European Climbing - M&A Microsite</title>
+<style>
+  :root{
+    --ink:#1b2430;--slate:#33414f;--muted:#6b7886;--line:#e3e7ec;--bg:#f6f7f9;
+    --card:#fff;--accent:#e2683c;--teal:#1f8a8a;--gold:#c79a3a;--good:#2f8f5b;--purple:#7a3ca8;--verl:#1f8a8a;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+    color:var(--ink);background:var(--bg);line-height:1.55;-webkit-font-smoothing:antialiased;}
+  /* sticky header + tabs */
+  .topbar{position:sticky;top:0;z-index:50;background:#1b2430;color:#fff;box-shadow:0 2px 10px rgba(20,30,40,.18);}
+  .topbar .brand{display:flex;align-items:baseline;gap:12px;padding:13px 26px 0;flex-wrap:wrap;}
+  .topbar .brand .k{letter-spacing:.16em;text-transform:uppercase;font-size:10px;color:#9fd0d0;font-weight:600;}
+  .topbar .brand h1{margin:0;font-size:17px;font-weight:700;}
+  .tabs{display:flex;gap:2px;padding:8px 18px 0;overflow-x:auto;}
+  .tab{background:none;border:none;color:#aeb9c4;font-size:13px;font-weight:600;padding:10px 15px;cursor:pointer;
+    border-bottom:3px solid transparent;white-space:nowrap;font-family:inherit;}
+  .tab:hover{color:#fff;}
+  .tab.active{color:#fff;border-bottom-color:var(--accent);}
+  .wrap{max-width:1100px;margin:0 auto;padding:26px 26px 90px;}
+  section.view{display:none;}
+  section.view.active{display:block;animation:fade .25s ease;}
+  @keyframes fade{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:none;}}
+  h2{font-size:21px;margin:6px 0 4px;}
+  h3{font-size:15px;color:var(--slate);margin:22px 0 6px;}
+  p{margin:9px 0;color:var(--slate);} .lead{font-size:16px;color:var(--ink);}
+  .note{font-size:12px;color:var(--muted);font-style:italic;}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px 22px;margin:15px 0;box-shadow:0 1px 2px rgba(20,30,40,.04);}
+  .reco{background:linear-gradient(135deg,#fff6f1,#fdeee6);border:1px solid #f3d4c2;}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+  @media(max-width:820px){.grid3{grid-template-columns:1fr;}}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;}
+  .stat .n{font-size:27px;font-weight:800;color:var(--accent);line-height:1;}
+  .stat .l{font-size:12px;color:var(--muted);margin-top:7px;}
+  /* bar chart (market) */
+  .bar-row{display:flex;align-items:center;margin:7px 0;font-size:13px;}
+  .bar-row .lab{width:200px;flex:0 0 200px;color:var(--ink);font-weight:500;padding-right:10px;text-align:right;}
+  .bar-row .track{flex:1;background:#eef1f4;border-radius:5px;height:22px;overflow:hidden;}
+  .bar-row .fill{height:100%;border-radius:5px;display:flex;align-items:center;justify-content:flex-end;padding-right:8px;color:#fff;font-size:11.5px;font-weight:600;}
+  .lg{display:flex;flex-wrap:wrap;gap:14px;margin:8px 0;font-size:12px;color:var(--muted);}
+  .lg span{display:inline-flex;align-items:center;gap:6px;}
+  .dot{width:11px;height:11px;border-radius:3px;display:inline-block;}
+  /* tables */
+  table{width:100%;border-collapse:collapse;font-size:12.8px;}
+  th,td{padding:8px 9px;border-bottom:1px solid var(--line);vertical-align:top;text-align:left;}
+  th{background:var(--ink);color:#fff;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.03em;}
+  th.sortable{cursor:pointer;user-select:none;}
+  th.sortable:hover{background:#2a3744;}
+  th .arrow{opacity:.5;font-size:9px;margin-left:3px;}
+  tr:nth-child(even) td{background:#fafbfc;}
+  .pill{font-size:10.5px;padding:2px 8px;border-radius:20px;font-weight:600;white-space:nowrap;}
+  .p-pe{background:#f0e6f7;color:#7a3ca8;}.p-found{background:#e7f1ec;color:#2f8f5b;}
+  .p-verl{background:#e2f0f0;color:#16706f;}.p-np{background:#eef1f4;color:#5a6772;}
+  .filters{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:6px;}
+  .filters input,.filters select{font-family:inherit;font-size:13px;padding:8px 11px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink);}
+  .filters input{flex:1;min-width:160px;}
+  .filters .count{font-size:12px;color:var(--muted);margin-left:auto;}
+  /* timeline */
+  .tl-item{display:flex;gap:16px;padding:13px 0;border-bottom:1px dashed var(--line);}
+  .tl-date{flex:0 0 92px;font-weight:700;color:var(--accent);font-size:13px;}
+  .tl-body{flex:1;font-size:13.5px;} .tl-body b{color:var(--ink);}
+  /* strategy */
+  .strat{border-left:5px solid var(--accent);}
+  .strat h3{margin-top:4px;color:var(--ink);font-size:16px;}
+  .tag{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:3px 9px;border-radius:5px;margin-bottom:6px;}
+  .t-a{background:#fdece4;color:#c0632a;}.t-b{background:#e9f7f7;color:#16706f;}.t-c{background:#eef0e4;color:#7a7320;}.t-d{background:#f0e6f7;color:#7a3ca8;}
+  .pc{font-size:12.5px;}.pros b{color:var(--good);}.cons b{color:var(--warn,#c0632a);}
+  ul{margin:8px 0;padding-left:20px;}li{margin:4px 0;color:var(--slate);font-size:13.5px;}
+  .disc{font-size:11.5px;color:#7a6a48;background:#fbf6ee;border:1px solid #ecdcc2;border-radius:10px;padding:12px 16px;margin-top:16px;}
+  /* model */
+  .modelgrid{display:grid;grid-template-columns:330px 1fr;gap:20px;}
+  @media(max-width:880px){.modelgrid{grid-template-columns:1fr;}}
+  .presets{display:flex;gap:8px;margin-bottom:16px;}
+  .preset{flex:1;border:1.5px solid var(--line);background:#fff;border-radius:9px;padding:8px 6px;font-size:12px;font-weight:600;cursor:pointer;color:var(--slate);text-align:center;font-family:inherit;}
+  .preset:hover{border-color:var(--accent);}.preset.active{background:var(--ink);color:#fff;border-color:var(--ink);}
+  .grp{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--accent);margin:14px 0 6px;padding-bottom:4px;border-bottom:1px solid var(--line);}
+  .slider{margin:12px 0;}
+  .slider .row{display:flex;justify-content:space-between;align-items:baseline;font-size:12.5px;}
+  .slider .row .val{font-weight:700;color:var(--ink);font-size:13.5px;}
+  input[type=range]{width:100%;-webkit-appearance:none;height:5px;border-radius:5px;background:#dde3e9;margin-top:7px;outline:none;}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:17px;height:17px;border-radius:50%;background:var(--accent);cursor:pointer;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.25);}
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px;}
+  @media(max-width:880px){.kpis{grid-template-columns:repeat(2,1fr);}}
+  .kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 15px;}
+  .kpi .t{font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);}
+  .kpi .n{font-size:25px;font-weight:800;line-height:1.05;margin-top:5px;}
+  .kpi .s{font-size:11px;color:var(--muted);margin-top:3px;}
+  .kpi.k1 .n{color:var(--slate);}.kpi.k2 .n{color:var(--teal);}.kpi.k3 .n{color:var(--accent);}.kpi.k4 .n{color:var(--purple);}
+  .reset{margin-top:14px;width:100%;border:1px solid var(--line);background:#fff;border-radius:9px;padding:9px;font-size:12px;cursor:pointer;color:var(--muted);font-family:inherit;}
+  .reset:hover{border-color:var(--accent);color:var(--accent);}
+  svg{max-width:100%;height:auto;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <span class="k">Confidential</span>
+    <h1>European Climbing - M&amp;A Landscape &amp; Consolidation Model</h1>
+  </div>
+  <div class="tabs">
+    <button class="tab active" data-tab="thesis">Thesis</button>
+    <button class="tab" data-tab="market">Market map</button>
+    <button class="tab" data-tab="operators">Top 30</button>
+    <button class="tab" data-tab="deals">Deals</button>
+    <button class="tab" data-tab="strategy">Strategy</button>
+    <button class="tab" data-tab="model">Valuation model</button>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- THESIS -->
+  <section class="view active" id="thesis">
+    <h2>The thesis</h2>
+    <p class="lead">European indoor climbing is a large, fast-growing, <b>structurally fragmented</b> market - even the biggest operators rarely exceed a dozen sites. Post-Olympic participation has surged and capital is moving in. Today there is exactly <b>one</b> serious attempt to build a pan-European group: <b>Verlinvest</b> (the Brussels firm behind Oatly), which has assembled a 21-gym platform. The window to build a challenger - or merge into the leader on strong terms - is open now.</p>
+    <div class="grid3">
+      <div class="stat"><div class="n">€320m+</div><div class="l">PE/VC into climbing gyms 2020-24 (~$180m in 2024 alone)</div></div>
+      <div class="stat"><div class="n">~21</div><div class="l">Gyms in Verlinvest's platform - largest cross-border group</div></div>
+      <div class="stat"><div class="n">19</div><div class="l">Urban Apes gyms - DACH market leader, ~€20m turnover</div></div>
+    </div>
+    <div class="card reco">
+      <h3 style="margin-top:0;">Headline</h3>
+      <p style="margin-bottom:4px;">A combination of <b>a financial sponsor + Urban Apes (DACH) + Verlinvest's platform (UK / Nordics) + a French anchor</b> would create a ~50-60 gym, 4-country group - instantly the #1 operator in Europe and several times the size of any standalone rival. The question is whether to <b>merge into Verlinvest</b> (faster, less control) or <b>build a parallel champion</b> (more control, more capital and execution risk). See Strategy, then flex the numbers in the Valuation model.</p>
+    </div>
+  </section>
+
+  <!-- MARKET -->
+  <section class="view" id="market">
+    <h2>Scale: operators by estimated site count</h2>
+    <p>Bars show approximate site counts. Colour shows ownership status - the key signal for who is "in play."</p>
+    <div class="card">
+      <div class="lg">
+        <span><i class="dot" style="background:var(--verl)"></i> Verlinvest platform</span>
+        <span><i class="dot" style="background:var(--purple)"></i> PE-backed (in play)</span>
+        <span><i class="dot" style="background:var(--good)"></i> Founder / independent</span>
+        <span><i class="dot" style="background:#5a6772"></i> Non-profit</span>
+      </div>
+      <div class="bar-row"><div class="lab">Climb Up (FR)</div><div class="track"><div class="fill" style="width:84%;background:var(--purple)">27</div></div></div>
+      <div class="bar-row"><div class="lab">Arkose (FR/BE/ES)</div><div class="track"><div class="fill" style="width:75%;background:var(--purple)">24</div></div></div>
+      <div class="bar-row"><div class="lab">Verlinvest platform</div><div class="track"><div class="fill" style="width:66%;background:var(--verl)">21</div></div></div>
+      <div class="bar-row"><div class="lab">Urban Apes (DACH)</div><div class="track"><div class="fill" style="width:59%;background:var(--purple)">19</div></div></div>
+      <div class="bar-row"><div class="lab">Altissimo / Block'Out (FR)</div><div class="track"><div class="fill" style="width:38%;background:var(--good)">12</div></div></div>
+      <div class="bar-row"><div class="lab">Climbing Hangar (UK)*</div><div class="track"><div class="fill" style="width:34%;background:var(--verl)">11</div></div></div>
+      <div class="bar-row"><div class="lab">Boulders (DK)*</div><div class="track"><div class="fill" style="width:31%;background:var(--verl)">10</div></div></div>
+      <div class="bar-row"><div class="lab">Klättercentret (SE)</div><div class="track"><div class="fill" style="width:31%;background:var(--good)">10</div></div></div>
+      <div class="bar-row"><div class="lab">Vertical'Art (FR)</div><div class="track"><div class="fill" style="width:28%;background:var(--good)">9</div></div></div>
+      <div class="bar-row"><div class="lab">Boulderwelt (DE)</div><div class="track"><div class="fill" style="width:25%;background:var(--good)">8</div></div></div>
+      <div class="bar-row"><div class="lab">Depot Climbing (UK)</div><div class="track"><div class="fill" style="width:25%;background:var(--good)">8</div></div></div>
+      <div class="bar-row"><div class="lab">Climbing District (FR)</div><div class="track"><div class="fill" style="width:16%;background:var(--purple)">5</div></div></div>
+      <p class="note">* Climbing Hangar and Boulders both sit inside the Verlinvest platform (shown separately for legibility). DAV's 200+ German alpine-club centres are non-commercial and excluded.</p>
+    </div>
+    <h3>Who is in play</h3>
+    <div class="grid3">
+      <div class="card" style="border-top:4px solid var(--verl);margin:0;"><h3 style="margin-top:0;">The consolidator</h3><p style="font-size:13px;"><b>Verlinvest</b> - evergreen capital, 21 gyms across UK + Denmark, hunting bolt-ons in Germany and the Nordics. Your partner or your competitor.</p></div>
+      <div class="card" style="border-top:4px solid var(--purple);margin:0;"><h3 style="margin-top:0;">In play / exit-stage</h3><p style="font-size:13px;"><b>Urban Apes</b> (Family Trust PE, ~5yrs in), <b>Climb Up</b> (raising, seeking M&amp;A), <b>Climbing District</b> (VC-backed), <b>Arkose</b> (recently restructured).</p></div>
+      <div class="card" style="border-top:4px solid var(--good);margin:0;"><h3 style="margin-top:0;">Roll-up fuel</h3><p style="font-size:13px;">Strong founder-owned single-sites &amp; mini-chains: Boulderwelt, Einstein, Boulderbar, Berta Block, Monk, Swiss singles. Germany &amp; France most fragmented.</p></div>
+    </div>
+  </section>
+
+  <!-- OPERATORS -->
+  <section class="view" id="operators">
+    <h2>The top ~30 operators</h2>
+    <p class="note">Click headers to sort; search or filter by ownership. Site counts approximate; revenue largely private (n/d = not disclosed).</p>
+    <div class="card" style="padding:16px;">
+      <div class="filters">
+        <input id="opSearch" type="text" placeholder="Search operator or country…">
+        <select id="opOwn">
+          <option value="">All ownership</option>
+          <option value="verl">Verlinvest</option>
+          <option value="pe">PE / VC-backed</option>
+          <option value="ind">Founder / independent</option>
+          <option value="np">Non-profit</option>
+        </select>
+        <span class="count" id="opCount"></span>
+      </div>
+      <table id="opTable">
+        <thead><tr>
+          <th class="sortable" data-s="rank">#<span class="arrow"></span></th>
+          <th class="sortable" data-s="name">Operator<span class="arrow"></span></th>
+          <th class="sortable" data-s="country">Country<span class="arrow"></span></th>
+          <th class="sortable" data-s="sites">Sites<span class="arrow"></span></th>
+          <th>Revenue</th>
+          <th class="sortable" data-s="own">Ownership<span class="arrow"></span></th>
+        </tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- DEALS -->
+  <section class="view" id="deals">
+    <h2>Consolidation deals - last ~5 years</h2>
+    <div class="card">
+      <div class="tl-item"><div class="tl-date">2019</div><div class="tl-body"><b>Climb Up</b> takes €15m minority from Calcium Capital (later joined by Access Capital Partners).</div></div>
+      <div class="tl-item"><div class="tl-date">Dec 2020</div><div class="tl-body"><b>Family Trust → Urban Apes:</b> PE majority at just 3 halls - the platform for the DACH roll-up.</div></div>
+      <div class="tl-item"><div class="tl-date">2021</div><div class="tl-body"><b>Climbing District</b> raises €5m Series A (Paris urban-lifestyle model).</div></div>
+      <div class="tl-item"><div class="tl-date">Jan 2024</div><div class="tl-body"><b>Climbing District</b> raises a further <b>€10m</b> (Pléiade Venture, 123 IM) to expand to London &amp; Milan.</div></div>
+      <div class="tl-item"><div class="tl-date">2024</div><div class="tl-body"><b>Arkose</b> consolidates its gyms under an "Arkose &amp; Co" holding; ~€50m revenue.</div></div>
+      <div class="tl-item"><div class="tl-date">Oct 2024</div><div class="tl-body"><b>Verlinvest → The Climbing Hangar:</b> majority stake, <b>~£20m</b>; UK expansion to 11 sites.</div></div>
+      <div class="tl-item"><div class="tl-date">2024</div><div class="tl-body"><b>Climb Up</b> signals French consolidation; raising €20-30m to refinance and buy domestic competitors.</div></div>
+      <div class="tl-item"><div class="tl-date">Feb 2025</div><div class="tl-body"><b>Urban Apes → Der Steinbock</b> (7 gyms, DE/AT): becomes DACH market leader at 19 gyms.</div></div>
+      <div class="tl-item"><div class="tl-date">Sep 2025</div><div class="tl-body"><b>Verlinvest → Boulders</b> (Denmark, 10 gyms): est. €15-30m. Platform now <b>21 gyms</b> - first true pan-European group.</div></div>
+    </div>
+  </section>
+
+  <!-- STRATEGY -->
+  <section class="view" id="strategy">
+    <h2>Building a 3-4 player champion</h2>
+    <p class="lead">Combine 3-4 leading platforms into a European #1: <b>Urban Apes (DACH)</b>, <b>Verlinvest's platform (UK + Nordics)</b>, a <b>financial sponsor's capital vehicle</b>, and a <b>French anchor</b> (Climb Up or Arkose). <span class="note">Roles described from the principals' standpoint; prepared on a buy-side advisory basis.</span></p>
+    <div class="card">
+      <h3 style="margin-top:0;text-align:center;">Proposed combined entity - illustrative</h3>
+      <svg viewBox="0 0 900 360" xmlns="http://www.w3.org/2000/svg">
+        <rect x="320" y="20" width="260" height="62" rx="10" fill="#1b2430"/>
+        <text x="450" y="46" text-anchor="middle" fill="#fff" font-size="16" font-weight="700">European Climbing Group</text>
+        <text x="450" y="66" text-anchor="middle" fill="#9fd0d0" font-size="12">HoldCo - ~50-60 gyms, 4 countries</text>
+        <line x1="450" y1="82" x2="450" y2="110" stroke="#9aa6b2" stroke-width="2"/>
+        <line x1="130" y1="140" x2="770" y2="140" stroke="#9aa6b2" stroke-width="2"/>
+        <line x1="130" y1="140" x2="130" y2="170" stroke="#9aa6b2" stroke-width="2"/>
+        <line x1="357" y1="140" x2="357" y2="170" stroke="#9aa6b2" stroke-width="2"/>
+        <line x1="585" y1="140" x2="585" y2="170" stroke="#9aa6b2" stroke-width="2"/>
+        <line x1="790" y1="140" x2="790" y2="170" stroke="#9aa6b2" stroke-width="2"/>
+        <rect x="35" y="170" width="190" height="120" rx="10" fill="#fff" stroke="#e2683c" stroke-width="2"/>
+        <text x="130" y="196" text-anchor="middle" fill="#c0632a" font-size="11" font-weight="700">FINANCIAL SPONSOR</text>
+        <text x="130" y="222" text-anchor="middle" fill="#1b2430" font-size="13" font-weight="700">Capital vehicle</text>
+        <text x="130" y="244" text-anchor="middle" fill="#6b7886" font-size="11">PE / family office</text>
+        <text x="130" y="262" text-anchor="middle" fill="#6b7886" font-size="11">+ co-investors</text>
+        <text x="130" y="280" text-anchor="middle" fill="#6b7886" font-size="11">Equity &amp; governance</text>
+        <rect x="262" y="170" width="190" height="120" rx="10" fill="#fff" stroke="#7a3ca8" stroke-width="2"/>
+        <text x="357" y="196" text-anchor="middle" fill="#7a3ca8" font-size="11" font-weight="700">DACH PILLAR</text>
+        <text x="357" y="222" text-anchor="middle" fill="#1b2430" font-size="13" font-weight="700">Urban Apes</text>
+        <text x="357" y="244" text-anchor="middle" fill="#6b7886" font-size="11">19 gyms · DE/AT</text>
+        <text x="357" y="262" text-anchor="middle" fill="#6b7886" font-size="11">~€20m revenue</text>
+        <text x="357" y="280" text-anchor="middle" fill="#6b7886" font-size="11">Market leader</text>
+        <rect x="490" y="170" width="190" height="120" rx="10" fill="#fff" stroke="#1f8a8a" stroke-width="2"/>
+        <text x="585" y="196" text-anchor="middle" fill="#16706f" font-size="11" font-weight="700">UK / NORDICS</text>
+        <text x="585" y="222" text-anchor="middle" fill="#1b2430" font-size="13" font-weight="700">Verlinvest platform</text>
+        <text x="585" y="244" text-anchor="middle" fill="#6b7886" font-size="11">Climbing Hangar · 11</text>
+        <text x="585" y="262" text-anchor="middle" fill="#6b7886" font-size="11">Boulders · 10</text>
+        <text x="585" y="280" text-anchor="middle" fill="#6b7886" font-size="11">Evergreen capital</text>
+        <rect x="695" y="170" width="190" height="120" rx="10" fill="#fbfbfc" stroke="#c79a3a" stroke-width="2" stroke-dasharray="6 4"/>
+        <text x="790" y="196" text-anchor="middle" fill="#9a7a24" font-size="11" font-weight="700">FRANCE (4th, optional)</text>
+        <text x="790" y="222" text-anchor="middle" fill="#1b2430" font-size="13" font-weight="700">Climb Up / Arkose</text>
+        <text x="790" y="244" text-anchor="middle" fill="#6b7886" font-size="11">24-27 gyms</text>
+        <text x="790" y="262" text-anchor="middle" fill="#6b7886" font-size="11">€30-50m revenue</text>
+        <text x="790" y="280" text-anchor="middle" fill="#6b7886" font-size="11">Continental coverage</text>
+        <rect x="40" y="310" width="820" height="38" rx="8" fill="#eef1f4"/>
+        <text x="450" y="334" text-anchor="middle" fill="#33414f" font-size="11.5" font-weight="600">Shared services: routesetting · hold &amp; wall procurement · booking/CRM · membership reciprocity · ancillary (café, sauna, coworking)</text>
+      </svg>
+    </div>
+
+    <h3>Four routes to get there</h3>
+    <div class="card strat" style="border-left-color:#c0632a;"><span class="tag t-a">Strategy A · Merge into the leader</span><h3>Acquire Urban Apes, then fold it into Verlinvest's platform for equity</h3><p class="pc">Buyer secures Urban Apes and contributes it into the Verlinvest platform, taking equity + a board seat in the enlarged ~40-gym group.</p><p class="pros"><b>Pros:</b> fastest path to #1; de-risked by Verlinvest's capital and playbook; immediate cross-border scale.</p><p class="cons"><b>Cons:</b> buyer is the junior partner; Verlinvest dictates terms and culture; limited control.</p></div>
+    <div class="card strat" style="border-left-color:#16706f;"><span class="tag t-b">Strategy B · Build the challenger</span><h3>Independent champion: Urban Apes + a French anchor + a Benelux/Nordic platform</h3><p class="pc">Build a parallel group without Verlinvest - Urban Apes as DACH core, a French anchor (Climb Up is seeking consolidation), plus a Benelux or Nordic operator. Targets 50+ gyms.</p><p class="pros"><b>Pros:</b> full control; first mover on the DACH+France combination; you set the brand architecture.</p><p class="cons"><b>Cons:</b> most capital-intensive; may bid against Verlinvest; heavy integration risk.</p></div>
+    <div class="card strat" style="border-left-color:#7a7320;"><span class="tag t-c">Strategy C · DACH-first roll-up</span><h3>Take Urban Apes as the platform; bolt on German / Austrian / Swiss independents</h3><p class="pc">Use Urban Apes as the vehicle (proven with Der Steinbock) to absorb Boulderwelt, Einstein, Boulderbar, Berta Block and Swiss singles - dominate DACH at ~35-40 gyms, then merge cross-border from strength.</p><p class="pros"><b>Pros:</b> cleanest integration (one region/playbook); proven acquirer; regional dominance first.</p><p class="cons"><b>Cons:</b> slower to pan-European; founder targets can be reluctant sellers.</p></div>
+    <div class="card strat" style="border-left-color:#7a3ca8;"><span class="tag t-d">Strategy D · Three-pillar federation (recommended framing)</span><h3>HoldCo of semi-autonomous regional champions sharing a back office</h3><p class="pc">A HoldCo with 3-4 regional brands kept independent - DACH (Urban Apes), UK/Nordics (Verlinvest), France (Climb Up/Arkose) - unified only on what scales: procurement, routesetting, digital/booking, cross-border membership.</p><p class="pros"><b>Pros:</b> preserves local brand &amp; community (the #1 integration risk); captures real synergies; flexible cap table for multiple PE sellers.</p><p class="cons"><b>Cons:</b> governance complexity; slower synergy capture; needs a strong central team.</p></div>
+
+    <h3>Where the synergies actually are</h3>
+    <ul>
+      <li><b>Procurement &amp; supply chain</b> - routesetting talent, holds and wall builders are the sector's genuine bottlenecks; group purchasing and a shared setter pool is the biggest hard synergy.</li>
+      <li><b>Ancillary revenue</b> - café, sauna, cold plunge, yoga, coworking; rolling the dwell-time model across all sites lifts revenue per member.</li>
+      <li><b>Digital backbone</b> - one booking/CRM/membership platform; cross-border reciprocal access differentiates a pan-European group.</li>
+      <li><b>Capital &amp; build cost</b> - construction up ~20%; a group builds cheaper and buys sub-scale sites below replacement cost.</li>
+    </ul>
+    <p><b>The arbitrage in one line:</b> buy fragmented single-country operators at <b>~6-9x EBITDA</b>, integrate into a pan-European platform, exit at <b>~10-12x EBITDA</b> - capturing both the multiple re-rate and the earnings growth.</p>
+  </section>
+
+  <!-- MODEL -->
+  <section class="view" id="model">
+    <h2>Valuation model</h2>
+    <p>Flex the assumptions and watch the formation-to-exit value move. Presets match the report's scenarios.</p>
+    <div class="modelgrid">
+      <div class="card" style="margin-top:0;">
+        <div class="presets">
+          <div class="preset" data-p="cons">Conservative</div>
+          <div class="preset active" data-p="base">Base</div>
+          <div class="preset" data-p="bull">Bull</div>
+        </div>
+        <div class="grp">At formation (Day 1)</div>
+        <div class="slider" data-k="gyms0"><div class="row"><span class="lab">Gyms at formation</span><span class="val"></span></div><input type="range" min="30" max="90" step="1"></div>
+        <div class="slider" data-k="rev0"><div class="row"><span class="lab">Avg revenue / gym</span><span class="val"></span></div><input type="range" min="0.7" max="1.6" step="0.01"></div>
+        <div class="slider" data-k="mar0"><div class="row"><span class="lab">EBITDA margin</span><span class="val"></span></div><input type="range" min="10" max="30" step="0.5"></div>
+        <div class="slider" data-k="ent"><div class="row"><span class="lab">Entry multiple (EV/EBITDA)</span><span class="val"></span></div><input type="range" min="6" max="12" step="0.5"></div>
+        <div class="slider" data-k="debt"><div class="row"><span class="lab">Net debt at entry (x EBITDA)</span><span class="val"></span></div><input type="range" min="0" max="6" step="0.5"></div>
+        <div class="grp">Scaling over the hold</div>
+        <div class="slider" data-k="yrs"><div class="row"><span class="lab">Hold period (years)</span><span class="val"></span></div><input type="range" min="3" max="7" step="1"></div>
+        <div class="slider" data-k="net"><div class="row"><span class="lab">Net new gyms / year</span><span class="val"></span></div><input type="range" min="0" max="20" step="1"></div>
+        <div class="slider" data-k="grow"><div class="row"><span class="lab">Same-gym revenue growth / yr</span><span class="val"></span></div><input type="range" min="0" max="10" step="0.5"></div>
+        <div class="slider" data-k="marX"><div class="row"><span class="lab">EBITDA margin at exit</span><span class="val"></span></div><input type="range" min="12" max="32" step="0.5"></div>
+        <div class="slider" data-k="exit"><div class="row"><span class="lab">Exit multiple (EV/EBITDA)</span><span class="val"></span></div><input type="range" min="6" max="14" step="0.5"></div>
+        <button class="reset" id="reset">Reset to Base case</button>
+      </div>
+      <div>
+        <div class="kpis">
+          <div class="kpi k1"><div class="t">Formation EV</div><div class="n" id="evNow"></div><div class="s" id="evNowS"></div></div>
+          <div class="kpi k2"><div class="t">Exit EV</div><div class="n" id="evExit"></div><div class="s" id="evExitS"></div></div>
+          <div class="kpi k3"><div class="t">EV uplift</div><div class="n" id="uplift"></div><div class="s">enterprise value</div></div>
+          <div class="kpi k4"><div class="t">Equity MOIC</div><div class="n" id="moic"></div><div class="s">incl. leverage</div></div>
+        </div>
+        <div class="card" style="margin-top:0;"><h3 style="margin:0 0 4px;">Enterprise value trajectory</h3><div class="note" id="chartSub"></div><svg id="chart" viewBox="0 0 760 280" xmlns="http://www.w3.org/2000/svg"></svg></div>
+        <div class="card"><h3 style="margin:0 0 8px;">Year-by-year build</h3>
+          <table id="tbl"><thead><tr><th>Year</th><th style="text-align:right;">Gyms</th><th style="text-align:right;">Revenue</th><th style="text-align:right;">EBITDA</th><th style="text-align:right;">Margin</th><th style="text-align:right;">EV</th></tr></thead><tbody></tbody></table>
+          <div class="disc"><b>Illustrative only.</b> Run-rate model from public deal comps and sector benchmarks - not a valuation or investment advice. Net debt assumed broadly constant over the hold (no paydown modelled), so equity MOIC is conservative.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+/* ---------- TABS ---------- */
+document.querySelectorAll('.tab').forEach(t=>{
+  t.addEventListener('click',()=>{
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));
+    t.classList.add('active');
+    document.getElementById(t.dataset.tab).classList.add('active');
+    window.scrollTo({top:0,behavior:'smooth'});
+  });
+});
+
+/* ---------- OPERATORS TABLE ---------- */
+const OPS=[
+ {rank:1,name:"Climb Up",country:"France",sites:27,sitesD:"27",rev:"~€30m",own:"pe",ownL:"PE minority"},
+ {rank:2,name:"Arkose",country:"FR/BE/ES",sites:24,sitesD:"~24",rev:"~€50m (2024)",own:"pe",ownL:"Holdco"},
+ {rank:3,name:"Urban Apes (target)",country:"DE/AT",sites:19,sitesD:"19",rev:"~€20m",own:"pe",ownL:"Family Trust PE"},
+ {rank:4,name:"The Climbing Hangar",country:"UK",sites:11,sitesD:"11",rev:"~£10m",own:"verl",ownL:"Verlinvest"},
+ {rank:5,name:"Boulders",country:"Denmark",sites:10,sitesD:"10-11",rev:"n/d",own:"verl",ownL:"Verlinvest"},
+ {rank:6,name:"Altissimo / Block'Out grp",country:"FR/PT",sites:12,sitesD:"~12",rev:"n/d",own:"ind",ownL:"Independent"},
+ {rank:7,name:"Vertical'Art",country:"France",sites:9,sitesD:"~9",rev:"n/d",own:"ind",ownL:"Independent"},
+ {rank:8,name:"Block'Out",country:"France",sites:8,sitesD:"~8",rev:"n/d",own:"ind",ownL:"Independent"},
+ {rank:9,name:"Boulderwelt",country:"Germany",sites:8,sitesD:"8",rev:"private",own:"ind",ownL:"Founder"},
+ {rank:10,name:"Depot Climbing",country:"UK",sites:8,sitesD:"8",rev:"n/d",own:"ind",ownL:"Independent"},
+ {rank:11,name:"Klättercentret",country:"Sweden",sites:10,sitesD:"10",rev:"n/d",own:"ind",ownL:"Independent"},
+ {rank:12,name:"Climbing District",country:"France",sites:5,sitesD:"5",rev:"n/d",own:"pe",ownL:"VC-backed"},
+ {rank:13,name:"Einstein Boulderhallen",country:"Germany",sites:6,sitesD:"~6",rev:"private",own:"ind",ownL:"Independent"},
+ {rank:14,name:"Monk Bouldergym",country:"NL/BE",sites:5,sitesD:"5",rev:"n/d",own:"ind",ownL:"Independent"},
+ {rank:15,name:"Boulderbar",country:"Austria",sites:6,sitesD:"~6",rev:"n/d",own:"ind",ownL:"Independent"},
+ {rank:16,name:"Mountain Network",country:"Netherlands",sites:5,sitesD:"~5",rev:"n/d",own:"ind",ownL:"Independent"},
+ {rank:17,name:"Sharma Climbing",country:"Spain",sites:4,sitesD:"~4",rev:"n/d",own:"ind",ownL:"Founder"},
+ {rank:18,name:"Rockspot",country:"Italy",sites:5,sitesD:"~5",rev:"n/d",own:"ind",ownL:"Independent"},
+ {rank:19,name:"Klatreverket",country:"Norway",sites:4,sitesD:"~4",rev:"n/d",own:"ind",ownL:"Independent"},
+ {rank:20,name:"Indoorwall",country:"Spain",sites:4,sitesD:"~4",rev:"n/d",own:"ind",ownL:"Independent"},
+ {rank:21,name:"Parthian Climbing",country:"UK",sites:4,sitesD:"~4",rev:"n/d",own:"ind",ownL:"Independent"},
+ {rank:22,name:"Klätterverket",country:"Sweden",sites:2,sitesD:"2+",rev:"n/d",own:"ind",ownL:"Independent"},
+ {rank:23,name:"The Climbing Works",country:"UK",sites:2,sitesD:"2",rev:"n/d",own:"ind",ownL:"Founder"},
+ {rank:24,name:"Climbat",country:"Spain",sites:3,sitesD:"~3",rev:"n/d",own:"ind",ownL:"Independent"},
+ {rank:25,name:"O'Bloc / Minimum / Magnet",country:"Switzerland",sites:3,sitesD:"1-3 ea",rev:"n/d",own:"ind",ownL:"Independent"},
+ {rank:26,name:"Berta Block / Ostbloc / Südbloc",country:"Germany",sites:1,sitesD:"1 ea",rev:"n/d",own:"ind",ownL:"Founder"},
+ {rank:27,name:"Flashpoint / Substance / Yonder",country:"UK",sites:2,sitesD:"1-3 ea",rev:"n/d",own:"ind",ownL:"Independent"},
+ {rank:28,name:"Klimax / Terres Neuves",country:"Belgium",sites:2,sitesD:"1-2",rev:"n/d",own:"ind",ownL:"Independent"},
+ {rank:29,name:"Just Climb / B-Side",country:"Italy",sites:2,sitesD:"1-2",rev:"n/d",own:"ind",ownL:"Independent"},
+ {rank:30,name:"DAV Kletterzentren",country:"Germany",sites:200,sitesD:"200+",rev:"non-profit",own:"np",ownL:"Alpine club"}
+];
+const PILL={verl:'p-verl',pe:'p-pe',ind:'p-found',np:'p-np'};
+let sortKey='rank', sortDir=1;
+const tbody=document.querySelector('#opTable tbody');
+function renderOps(){
+  const q=document.getElementById('opSearch').value.toLowerCase().trim();
+  const own=document.getElementById('opOwn').value;
+  let rows=OPS.filter(o=>(!own||o.own===own) && (!q || o.name.toLowerCase().includes(q) || o.country.toLowerCase().includes(q)));
+  rows.sort((a,b)=>{
+    let x=a[sortKey], y=b[sortKey];
+    if(sortKey==='name'||sortKey==='country'||sortKey==='own'){x=(''+x).toLowerCase();y=(''+y).toLowerCase();return x<y?-1*sortDir:x>y?1*sortDir:0;}
+    return (x-y)*sortDir;
+  });
+  tbody.innerHTML='';
+  rows.forEach(o=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${o.rank}</td><td><b>${o.name}</b></td><td>${o.country}</td><td>${o.sitesD}</td><td>${o.rev}</td><td><span class="pill ${PILL[o.own]}">${o.ownL}</span></td>`;
+    tbody.appendChild(tr);
+  });
+  document.getElementById('opCount').textContent=rows.length+' of '+OPS.length+' shown';
+  document.querySelectorAll('#opTable th.sortable').forEach(th=>{ const a=th.querySelector('.arrow'); a.textContent = th.dataset.s===sortKey ? (sortDir>0?'▲':'▼') : ''; });
+}
+document.querySelectorAll('#opTable th.sortable').forEach(th=>{ th.addEventListener('click',()=>{ const k=th.dataset.s; if(k===sortKey)sortDir*=-1; else{sortKey=k;sortDir = (k==='sites'||k==='rank')?(k==='sites'?-1:1):1;} renderOps(); }); });
+document.getElementById('opSearch').addEventListener('input',renderOps);
+document.getElementById('opOwn').addEventListener('change',renderOps);
+renderOps();
+
+/* ---------- VALUATION MODEL ---------- */
+const PRESETS={
+  cons:{gyms0:67,rev0:1.05,mar0:18,ent:9,debt:3,yrs:5,net:5,grow:2.5,marX:20,exit:8},
+  base:{gyms0:67,rev0:1.05,mar0:18,ent:9,debt:3.5,yrs:5,net:10,grow:4,marX:24,exit:10},
+  bull:{gyms0:67,rev0:1.05,mar0:18,ent:9,debt:4,yrs:5,net:16,grow:6,marX:26,exit:12}
+};
+const KEYS=['gyms0','rev0','mar0','ent','debt','yrs','net','grow','marX','exit'];
+const state={...PRESETS.base};
+const inputs={};
+document.querySelectorAll('#model .slider').forEach(s=>{inputs[s.dataset.k]=s.querySelector('input');});
+const eur=v=>'€'+(v>=100?Math.round(v):v.toFixed(0))+'m';
+const fmtMult=v=>v.toFixed(1)+'x';
+function fmtVal(k,v){if(k==='rev0')return '€'+v.toFixed(2)+'m';if(k==='mar0'||k==='marX'||k==='grow')return v.toFixed(1)+'%';if(k==='ent'||k==='exit'||k==='debt')return v.toFixed(1)+'x';if(k==='yrs')return v+' yrs';return ''+Math.round(v);}
+function compute(){
+  const s=state, rev0=s.gyms0*s.rev0, eb0=rev0*s.mar0/100, ev0=eb0*s.ent, netDebt=eb0*s.debt, eq0=ev0-netDebt;
+  const rows=[{yr:0,gyms:s.gyms0,rev:rev0,eb:eb0,mar:s.mar0,ev:ev0}];
+  for(let y=1;y<=s.yrs;y++){
+    const gyms=s.gyms0+s.net*y, revPerGym=s.rev0*Math.pow(1+s.grow/100,y), rev=gyms*revPerGym;
+    const mar=s.mar0+(s.marX-s.mar0)*(y/s.yrs), eb=rev*mar/100, mult=s.ent+(s.exit-s.ent)*(y/s.yrs), ev=eb*mult;
+    rows.push({yr:y,gyms,rev,eb,mar,ev});
+  }
+  const last=rows[rows.length-1], eqX=last.ev-netDebt;
+  return {rows,ev0,eb0,eq0,last,eqX,netDebt,uplift:last.ev/ev0,moic:eq0>0?eqX/eq0:0};
+}
+function render(){
+  KEYS.forEach(k=>{inputs[k].value=state[k];document.querySelector(`#model .slider[data-k="${k}"] .val`).textContent=fmtVal(k,state[k]);});
+  const r=compute();
+  document.getElementById('evNow').textContent=eur(r.ev0);
+  document.getElementById('evNowS').textContent='EBITDA '+eur(r.eb0)+' @ '+fmtMult(state.ent);
+  document.getElementById('evExit').textContent=eur(r.last.ev);
+  document.getElementById('evExitS').textContent='Yr '+state.yrs+' · '+r.last.gyms+' gyms @ '+fmtMult(state.exit);
+  document.getElementById('uplift').textContent=r.uplift.toFixed(1)+'x';
+  document.getElementById('moic').textContent=r.eq0>0?r.moic.toFixed(1)+'x':'n/a';
+  document.getElementById('chartSub').textContent='Formation '+eur(r.ev0)+'  →  Year '+state.yrs+' '+eur(r.last.ev)+'   ('+r.uplift.toFixed(1)+'x EV'+(r.eq0>0?', '+r.moic.toFixed(1)+'x equity':'')+')';
+  const tb=document.querySelector('#tbl tbody');tb.innerHTML='';
+  r.rows.forEach(row=>{const tr=document.createElement('tr');tr.innerHTML=`<td>${row.yr===0?'Formation':'Year '+row.yr}</td><td style="text-align:right;">${Math.round(row.gyms)}</td><td style="text-align:right;">${eur(row.rev)}</td><td style="text-align:right;">${eur(row.eb)}</td><td style="text-align:right;">${row.mar.toFixed(1)}%</td><td style="text-align:right;">${eur(row.ev)}</td>`;tb.appendChild(tr);});
+  drawChart(r.rows);
+}
+function drawChart(rows){
+  const W=760,H=280,pad={l:54,r:18,t:18,b:34};
+  const maxEV=Math.max(...rows.map(d=>d.ev))*1.12;
+  const x=i=>pad.l+(W-pad.l-pad.r)*(i/(rows.length-1)), y=v=>H-pad.b-(H-pad.t-pad.b)*(v/maxEV);
+  let svg='';
+  for(let g=0;g<=4;g++){const gv=maxEV*g/4,yy=y(gv);svg+=`<line x1="${pad.l}" y1="${yy}" x2="${W-pad.r}" y2="${yy}" stroke="#eef1f4"/><text x="${pad.l-8}" y="${yy+4}" text-anchor="end" font-size="10" fill="#9aa6b2">€${Math.round(gv)}m</text>`;}
+  let line='',area=`M ${x(0)} ${y(rows[0].ev)}`;
+  rows.forEach((d,i)=>{const px=x(i),py=y(d.ev);line+=(i?'L':'M')+px+' '+py+' ';if(i)area+=`L ${px} ${py} `;});
+  area+=`L ${x(rows.length-1)} ${H-pad.b} L ${x(0)} ${H-pad.b} Z`;
+  svg+=`<path d="${area}" fill="rgba(226,104,60,.10)"/><path d="${line}" fill="none" stroke="#e2683c" stroke-width="2.5"/>`;
+  rows.forEach((d,i)=>{const px=x(i),py=y(d.ev);svg+=`<circle cx="${px}" cy="${py}" r="4" fill="#fff" stroke="#e2683c" stroke-width="2"/><text x="${px}" y="${py-11}" text-anchor="middle" font-size="10.5" font-weight="700" fill="#1b2430">€${Math.round(d.ev)}m</text><text x="${px}" y="${H-pad.b+18}" text-anchor="middle" font-size="10" fill="#6b7886">${d.yr===0?'Form.':'Y'+d.yr}</text>`;});
+  document.getElementById('chart').innerHTML=svg;
+}
+KEYS.forEach(k=>{inputs[k].addEventListener('input',e=>{state[k]=parseFloat(e.target.value);setActivePreset(null);render();});});
+document.querySelectorAll('#model .preset').forEach(p=>{p.addEventListener('click',()=>{Object.assign(state,PRESETS[p.dataset.p]);setActivePreset(p.dataset.p);render();});});
+document.getElementById('reset').addEventListener('click',()=>{Object.assign(state,PRESETS.base);setActivePreset('base');render();});
+function setActivePreset(p){document.querySelectorAll('#model .preset').forEach(el=>el.classList.toggle('active',el.dataset.p===p));}
+render();
+</script>
+</body>
+</html>
